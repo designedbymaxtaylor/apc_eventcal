@@ -33,11 +33,49 @@ window.Webflow.push(() => {
         alert(`Missing type or slug for event: ${event.title}`);
       }
     },
-    eventClassNames(arg) {
-      const { type } = arg.event.extendedProps;
-      if (type === 'event') return ['event-type-event'];
-      if (type === 'meeting') return ['event-type-meeting'];
-      return [];
+    eventDidMount: function (info) {
+      const tooltip = document.createElement('div');
+      tooltip.className = 'fc-tooltip';
+      tooltip.style.position = 'absolute';
+      tooltip.style.padding = '8px';
+      tooltip.style.background = 'white';
+      tooltip.style.border = '1px solid #ccc';
+      tooltip.style.borderRadius = '4px';
+      tooltip.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+      tooltip.style.zIndex = '9999';
+      tooltip.style.display = 'none';
+
+      // Format date/time
+      const { start, end } = info.event;
+      const sameDay = start && end && start.toDateString() === end.toDateString();
+      const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+      const timeOptions = { hour: '2-digit', minute: '2-digit' };
+
+      const dateRange = sameDay
+        ? `${start?.toLocaleDateString(undefined, dateOptions)} ${start?.toLocaleTimeString(undefined, timeOptions)} – ${end?.toLocaleTimeString(undefined, timeOptions)}`
+        : `${start?.toLocaleDateString(undefined, dateOptions)} – ${end?.toLocaleDateString(undefined, dateOptions)}`;
+
+      tooltip.innerHTML = `
+      <strong>${info.event.title}</strong><br>
+      ${dateRange}<br>
+      ${info.event.extendedProps.location || ''}
+    `;
+      document.body.appendChild(tooltip);
+
+      info.el.addEventListener('mouseenter', (e) => {
+        tooltip.style.display = 'block';
+        tooltip.style.top = `${e.pageY + 10}px`;
+        tooltip.style.left = `${e.pageX + 10}px`;
+      });
+
+      info.el.addEventListener('mousemove', (e) => {
+        tooltip.style.top = `${e.pageY + 10}px`;
+        tooltip.style.left = `${e.pageX + 10}px`;
+      });
+
+      info.el.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+      });
     },
   });
 
@@ -49,9 +87,8 @@ window.Webflow.push(() => {
     filterBtn.addEventListener('click', () => {
       const type = filterBtn.getAttribute('data-filter');
 
-      const filtered = type === 'all'
-        ? allEvents
-        : allEvents.filter(event => event.type === type);
+      const filtered =
+        type === 'all' ? allEvents : allEvents.filter((event) => event.type === type);
 
       calendar.removeAllEvents();
       calendar.addEventSource(filtered);
