@@ -33,6 +33,12 @@ window.Webflow.push(() => {
         alert(`Missing type or slug for event: ${event.title}`);
       }
     },
+    eventClassNames(arg) {
+      const { type } = arg.event.extendedProps;
+      if (type === 'event') return ['event-type-event'];
+      if (type === 'meeting') return ['event-type-meeting'];
+      return [];
+    },
   });
 
   calendar.render();
