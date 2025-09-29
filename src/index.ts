@@ -34,7 +34,7 @@ window.Webflow.push(() => {
       }
     },
     eventDidMount: function (info) {
-  const tooltip = document.createElement('div');
+      const tooltip = document.createElement('div');
   tooltip.className = 'fc-tooltip';
   tooltip.style.position = 'absolute';
   tooltip.style.padding = '8px';
@@ -113,7 +113,16 @@ const getEvents = (): Event[] => {
   const events = [...scripts].map((script) => {
     const event: Event = JSON.parse(script.textContent!);
     event.start = new Date(event.start);
-    event.end = new Date(event.end);
+    if (event.end) {
+      const endDate = new Date(event.end);
+      if (isNaN(endDate.getTime())) {
+        delete event.end;
+      } else {
+        event.end = endDate;
+      }
+    } else {
+      delete event.end;
+    }
     return event;
   });
 
